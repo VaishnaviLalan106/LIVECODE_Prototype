@@ -4,12 +4,16 @@ import Editor from "@monaco-editor/react";
 function App() {
 
   const [code, setCode] = useState("<h1>Hello LiveCode</h1>");
-  const [output, setOutput] = useState("");
+  const [preview, setPreview] = useState("");
+  const [terminal, setTerminal] = useState("");
 
   const runCode = () => {
 
-    // HTML Preview
-    setOutput(code);
+    // Update Preview
+    setPreview(code);
+
+    // Fake Terminal Output
+    setTerminal("Code executed successfully.");
   };
 
   return (
@@ -29,7 +33,7 @@ function App() {
         <h2>LiveCode Editor</h2>
 
         <Editor
-          height="80vh"
+          height="60vh"
           defaultLanguage="html"
           theme="vs-dark"
           value={code}
@@ -47,6 +51,22 @@ function App() {
           Run Code
         </button>
 
+        {/* TERMINAL */}
+        <div style={{
+          marginTop: "20px",
+          background: "black",
+          padding: "10px",
+          height: "120px",
+          overflow: "auto",
+          border: "1px solid gray"
+        }}>
+
+          <h3>Terminal</h3>
+
+          <p>{terminal}</p>
+
+        </div>
+
       </div>
 
       {/* RIGHT SIDE */}
@@ -60,7 +80,7 @@ function App() {
 
         <iframe
           title="preview"
-          srcDoc={output}
+          srcDoc={preview}
           style={{
             width: "100%",
             height: "80vh",
