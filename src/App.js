@@ -3,88 +3,116 @@ import Editor from "@monaco-editor/react";
 
 function App() {
 
-  const [code, setCode] = useState("<h1>Hello LiveCode</h1>");
-  const [preview, setPreview] = useState("");
-  const [terminal, setTerminal] = useState("");
+  const [html, setHtml] = useState("<h1>Hello LiveCode</h1>");
+  const [css, setCss] = useState("h1 { color: blue; }");
+  const [js, setJs] = useState("console.log('Hello')");
+  const [srcDoc, setSrcDoc] = useState("");
 
   const runCode = () => {
 
-    // Update Preview
-    setPreview(code);
+    const combinedCode = `
+      <html>
 
-    // Fake Terminal Output
-    setTerminal("Code executed successfully.");
+      <style>
+      ${css}
+      </style>
+
+      <body>
+      ${html}
+
+      <script>
+      ${js}
+      </script>
+
+      </body>
+
+      </html>
+    `;
+
+    setSrcDoc(combinedCode);
   };
 
   return (
     <div style={{
-      display: "flex",
-      height: "100vh",
       background: "#1e1e1e",
-      color: "white"
+      color: "white",
+      minHeight: "100vh",
+      padding: "10px"
     }}>
 
-      {/* LEFT SIDE */}
-      <div style={{
-        width: "70%",
-        padding: "10px"
-      }}>
+      <h1>LiveCode</h1>
 
-        <h2>LiveCode Editor</h2>
+      {/* EDITORS */}
 
-        <Editor
-          height="60vh"
-          defaultLanguage="html"
-          theme="vs-dark"
-          value={code}
-          onChange={(value) => setCode(value)}
-        />
+      <div style={{ display: "flex", gap: "10px" }}>
 
-        <button
-          onClick={runCode}
-          style={{
-            marginTop: "10px",
-            padding: "10px 20px",
-            cursor: "pointer"
-          }}
-        >
-          Run Code
-        </button>
+        <div style={{ width: "33%" }}>
+          <h3>HTML</h3>
 
-        {/* TERMINAL */}
-        <div style={{
-          marginTop: "20px",
-          background: "black",
-          padding: "10px",
-          height: "120px",
-          overflow: "auto",
-          border: "1px solid gray"
-        }}>
+          <Editor
+            height="200px"
+            defaultLanguage="html"
+            theme="vs-dark"
+            value={html}
+            onChange={(value) => setHtml(value)}
+          />
+        </div>
 
-          <h3>Terminal</h3>
+        <div style={{ width: "33%" }}>
+          <h3>CSS</h3>
 
-          <p>{terminal}</p>
+          <Editor
+            height="200px"
+            defaultLanguage="css"
+            theme="vs-dark"
+            value={css}
+            onChange={(value) => setCss(value)}
+          />
+        </div>
 
+        <div style={{ width: "33%" }}>
+          <h3>JavaScript</h3>
+
+          <Editor
+            height="200px"
+            defaultLanguage="javascript"
+            theme="vs-dark"
+            value={js}
+            onChange={(value) => setJs(value)}
+          />
         </div>
 
       </div>
 
-      {/* RIGHT SIDE */}
-      <div style={{
-        width: "30%",
-        padding: "10px",
-        borderLeft: "1px solid gray"
-      }}>
+      {/* RUN BUTTON */}
+
+      <button
+        onClick={runCode}
+        style={{
+          marginTop: "20px",
+          padding: "10px 20px",
+          cursor: "pointer"
+        }}
+      >
+        Run Code
+      </button>
+
+      {/* PREVIEW */}
+
+      <div style={{ marginTop: "20px" }}>
 
         <h2>Preview</h2>
 
         <iframe
-          title="preview"
-          srcDoc={preview}
+          srcDoc={srcDoc}
+          title="output"
+          sandbox="allow-scripts"
+          frameBorder="0"
+          width="100%"
+          height="400px"
           style={{
-            width: "100%",
-            height: "80vh",
-            background: "white"
+            background: "white",
+            border: "1px solid gray"
           }}
         />
 
