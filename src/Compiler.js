@@ -12,6 +12,15 @@ function Compiler() {
 
   const [output, setOutput] = useState("");
 
+  // LANGUAGE IDS
+
+  const languageMap = {
+    python: 71,
+    javascript: 63,
+    java: 62,
+    cpp: 54
+  };
+
   const runCode = async () => {
 
     try {
@@ -20,11 +29,21 @@ function Compiler() {
         "http://localhost:5000/run",
         {
           code,
-          language
+          language_id: languageMap[language],
+          input: ""
         }
       );
 
-      setOutput(response.data.output);
+      console.log(response.data);
+
+      // OUTPUT DISPLAY
+
+      setOutput(
+        response.data.stdout ||
+        response.data.stderr ||
+        response.data.compile_output ||
+        "No Output"
+      );
 
     } catch (error) {
 
