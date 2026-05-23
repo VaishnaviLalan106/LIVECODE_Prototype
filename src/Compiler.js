@@ -12,10 +12,24 @@ function Compiler() {
 
   const [output, setOutput] = useState("");
 
-  // LANGUAGE IDS
+  const [preview, setPreview] = useState("");
 
-  
+  // RUN CODE
+
   const runCode = async () => {
+
+    // HTML/CSS/JS PREVIEW
+
+    if (
+      language === "html" ||
+      language === "javascript"
+    ) {
+
+      setPreview(code);
+      return;
+    }
+
+    // BACKEND EXECUTION
 
     try {
 
@@ -27,18 +41,13 @@ function Compiler() {
         }
       );
 
-      console.log(response.data);
-
-      // OUTPUT DISPLAY
-
       setOutput(
-            response.data.output || "No Output"
-          );
+        response.data.output || "No Output"
+      );
 
     } catch (error) {
 
       setOutput("Error running code");
-
       console.log(error);
     }
   };
@@ -46,68 +55,132 @@ function Compiler() {
   return (
 
     <div style={{
+      display: "flex",
       background: "#1e1e1e",
       color: "white",
-      minHeight: "100vh",
-      padding: "20px"
+      height: "100vh"
     }}>
 
-      <h1>LiveCode Compiler</h1>
-
-      {/* LANGUAGE SELECT */}
-
-      <select
-        value={language}
-        onChange={(e) => setLanguage(e.target.value)}
-        style={{
-          padding: "10px",
-          marginBottom: "20px"
-        }}
-      >
-
-        <option value="python">Python</option>
-        <option value="java">Java</option>
-        <option value="cpp">C++</option>
-        <option value="javascript">JavaScript</option>
-
-      </select>
-
-      {/* EDITOR */}
-
-      <Editor
-        height="400px"
-        language={language}
-        theme="vs-dark"
-        value={code}
-        onChange={(value) => setCode(value)}
-      />
-
-      {/* RUN BUTTON */}
-
-      <button
-        onClick={runCode}
-        style={{
-          marginTop: "20px",
-          padding: "10px 20px",
-          cursor: "pointer"
-        }}
-      >
-        Run Code
-      </button>
-
-      {/* TERMINAL */}
+      {/* SIDEBAR */}
 
       <div style={{
-        marginTop: "20px",
-        background: "black",
+        width: "220px",
+        background: "#252526",
         padding: "15px",
-        minHeight: "150px",
-        border: "1px solid gray"
+        borderRight: "1px solid #333"
       }}>
 
-        <h2>Terminal</h2>
+        <h2>LiveCode</h2>
 
-        <pre>{output}</pre>
+        <p>main.py</p>
+        <p>index.html</p>
+        <p>style.css</p>
+        <p>app.js</p>
+
+      </div>
+
+      {/* MAIN CONTENT */}
+
+      <div style={{
+        flex: 1,
+        padding: "20px"
+      }}>
+
+        {/* TOP BAR */}
+
+        <div style={{
+          display: "flex",
+          gap: "10px",
+          marginBottom: "20px"
+        }}>
+
+          <select
+            value={language}
+            onChange={(e) => setLanguage(e.target.value)}
+            style={{
+              padding: "10px"
+            }}
+          >
+
+            <option value="python">Python</option>
+            <option value="javascript">JavaScript</option>
+            <option value="html">HTML</option>
+            <option value="java">Java</option>
+            <option value="cpp">C++</option>
+
+          </select>
+
+          <button
+            onClick={runCode}
+            style={{
+              padding: "10px 20px",
+              cursor: "pointer"
+            }}
+          >
+            Run Code
+          </button>
+
+        </div>
+
+        {/* EDITOR */}
+
+        <Editor
+          height="400px"
+          language={language}
+          theme="vs-dark"
+          value={code}
+          onChange={(value) => setCode(value)}
+        />
+
+        {/* OUTPUT */}
+
+        <div style={{
+          marginTop: "20px"
+        }}>
+
+          {/* TERMINAL */}
+
+          {language !== "html" &&
+           language !== "javascript" ? (
+
+            <div style={{
+              background: "black",
+              padding: "15px",
+              minHeight: "150px",
+              border: "1px solid gray"
+            }}>
+
+              <h2>Terminal</h2>
+
+              <pre>{output}</pre>
+
+            </div>
+
+          ) : (
+
+            // PREVIEW
+
+            <div>
+
+              <h2>Preview</h2>
+
+              <iframe
+                srcDoc={preview}
+                title="preview"
+                sandbox="allow-scripts"
+                width="100%"
+                height="300px"
+                style={{
+                  background: "white",
+                  border: "1px solid gray"
+                }}
+              />
+
+            </div>
+
+          )}
+
+        </div>
 
       </div>
 
