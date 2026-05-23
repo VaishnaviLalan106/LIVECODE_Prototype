@@ -1,43 +1,162 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Editor from "@monaco-editor/react";
 import axios from "axios";
 
 function Compiler() {
 
-  const [language, setLanguage] = useState("python");
+  // FILE SYSTEM
 
-  const [code, setCode] = useState(
-`print("Hello Vaishnavi")`
-  );
+  const [files, setFiles] = useState({
+
+    "main.py": {
+      language: "python",
+      code: `print("Hello Python")`
+    },
+
+    "script.js": {
+      language: "javascript",
+      code: `console.log("Hello JavaScript")`
+    },
+
+    "main.cpp": {
+      language: "cpp",
+      code:
+`#include <iostream>
+using namespace std;
+
+int main() {
+  cout << "Hello C++";
+}`
+    },
+
+    "index.html": {
+      language: "html",
+      code:
+`<h1>Hello LiveCode</h1>
+<button onclick="showMessage()">
+Click Me
+</button>`
+    },
+
+    "style.css": {
+      language: "css",
+      code:
+`body {
+  font-family: Arial;
+  padding: 20px;
+}
+
+h1 {
+  color: blue;
+}`
+    },
+
+    "web.js": {
+      language: "javascript",
+      code:
+`function showMessage() {
+  alert("Live Preview Working!");
+}`
+    }
+
+  });
+
+  // CURRENT FILE
+
+  const [currentFile, setCurrentFile] =
+  useState("index.html");
+
+  // OUTPUT
 
   const [output, setOutput] = useState("");
 
-  const [preview, setPreview] = useState("");
+  // PREVIEW
 
-  // RUN CODE
+  const [srcDoc, setSrcDoc] = useState("");
+
+  // CURRENT FILE DATA
+
+  const currentLanguage =
+  files[currentFile].language;
+
+  const currentCode =
+  files[currentFile].code;
+
+  // UPDATE CODE
+
+  const updateCode = (value) => {
+
+    setFiles({
+      ...files,
+
+      [currentFile]: {
+        ...files[currentFile],
+        code: value
+      }
+    });
+  };
+
+  // LIVE PREVIEW
+
+  useEffect(() => {
+
+    const html =
+      files["index.html"]?.code || "";
+
+    const css =
+      files["style.css"]?.code || "";
+
+    const js =
+      files["web.js"]?.code || "";
+
+    const combined = `
+      <html>
+
+      <style>
+      ${css}
+      </style>
+
+      <body>
+      ${html}
+
+      <script>
+      ${js}
+      </script>
+
+      </body>
+
+      </html>
+    `;
+
+    setSrcDoc(combined);
+
+  }, [files]);
+
+  // RUN BACKEND CODE
 
   const runCode = async () => {
 
-    // HTML/CSS/JS PREVIEW
+    // ONLY BACKEND LANGUAGES
 
     if (
-      language === "html" ||
-      language === "javascript"
+      currentLanguage === "html" ||
+      currentLanguage === "css"
     ) {
 
-      setPreview(code);
+      setOutput(
+        "Live Preview Active → No Need To Run"
+      );
+
       return;
     }
-
-    // BACKEND EXECUTION
 
     try {
 
       const response = await axios.post(
         "http://localhost:5000/run",
         {
-          code,
-          language
+          code: currentCode,
+          language: currentLanguage
         }
       );
 
@@ -48,6 +167,7 @@ function Compiler() {
     } catch (error) {
 
       setOutput("Error running code");
+
       console.log(error);
     }
   };
@@ -56,63 +176,81 @@ function Compiler() {
 
     <div style={{
       display: "flex",
+      height: "100vh",
       background: "#1e1e1e",
-      color: "white",
-      height: "100vh"
+      color: "white"
     }}>
 
       {/* SIDEBAR */}
 
       <div style={{
         width: "220px",
-        background: "#252526",
-        padding: "15px",
+        background: "#111",
+        padding: "10px",
         borderRight: "1px solid #333"
       }}>
 
-        <h2>LiveCode</h2>
+        <h2>Files</h2>
 
-        <p>main.py</p>
-        <p>index.html</p>
-        <p>style.css</p>
-        <p>app.js</p>
+        {
+
+          Object.keys(files).map((file) => (
+
+            <div
+              key={file}
+              onClick={() => setCurrentFile(file)}
+              style={{
+                padding: "10px",
+                cursor: "pointer",
+                borderRadius: "5px",
+                marginBottom: "5px",
+
+                background:
+                  currentFile === file
+                  ? "#333"
+                  : "transparent"
+              }}
+            >
+              {file}
+            </div>
+
+          ))
+        }
 
       </div>
 
-      {/* MAIN CONTENT */}
+      {/* CENTER */}
 
       <div style={{
         flex: 1,
-        padding: "20px"
+        display: "flex"
       }}>
 
-        {/* TOP BAR */}
+        {/* EDITOR AREA */}
 
         <div style={{
+          width: "50%",
+          padding: "10px",
           display: "flex",
-          gap: "10px",
-          marginBottom: "20px"
+          flexDirection: "column"
         }}>
 
-          <select
-            value={language}
-            onChange={(e) => setLanguage(e.target.value)}
-            style={{
-              padding: "10px"
-            }}
-          >
+          <h2>{currentFile}</h2>
 
-            <option value="python">Python</option>
-            <option value="javascript">JavaScript</option>
-            <option value="html">HTML</option>
-            <option value="java">Java</option>
-            <option value="cpp">C++</option>
+          <Editor
+            height="60%"
+            language={currentLanguage}
+            theme="vs-dark"
+            value={currentCode}
+            onChange={updateCode}
+          />
 
-          </select>
+          {/* RUN BUTTON */}
 
           <button
             onClick={runCode}
             style={{
+              marginTop: "15px",
               padding: "10px 20px",
               cursor: "pointer"
             }}
@@ -120,65 +258,50 @@ function Compiler() {
             Run Code
           </button>
 
-        </div>
-
-        {/* EDITOR */}
-
-        <Editor
-          height="400px"
-          language={language}
-          theme="vs-dark"
-          value={code}
-          onChange={(value) => setCode(value)}
-        />
-
-        {/* OUTPUT */}
-
-        <div style={{
-          marginTop: "20px"
-        }}>
-
           {/* TERMINAL */}
 
-          {language !== "html" &&
-           language !== "javascript" ? (
+          <div style={{
+            marginTop: "20px",
+            background: "black",
+            padding: "15px",
+            flex: 1,
+            overflow: "auto"
+          }}>
 
-            <div style={{
-              background: "black",
-              padding: "15px",
-              minHeight: "150px",
-              border: "1px solid gray"
-            }}>
+            <h3>Terminal</h3>
 
-              <h2>Terminal</h2>
+            <pre>{output}</pre>
 
-              <pre>{output}</pre>
+          </div>
 
-            </div>
+        </div>
 
-          ) : (
+        {/* LIVE PREVIEW */}
 
-            // PREVIEW
+        <div style={{
+          width: "50%",
+          background: "white",
+          borderLeft: "1px solid #333"
+        }}>
 
-            <div>
+          <div style={{
+            background: "#222",
+            color: "white",
+            padding: "10px"
+          }}>
 
-              <h2>Preview</h2>
+            <h3>Live Preview</h3>
 
-              <iframe
-                srcDoc={preview}
-                title="preview"
-                sandbox="allow-scripts"
-                width="100%"
-                height="300px"
-                style={{
-                  background: "white",
-                  border: "1px solid gray"
-                }}
-              />
+          </div>
 
-            </div>
-
-          )}
+          <iframe
+            srcDoc={srcDoc}
+            title="preview"
+            sandbox="allow-scripts"
+            frameBorder="0"
+            width="100%"
+            height="100%"
+          />
 
         </div>
 
